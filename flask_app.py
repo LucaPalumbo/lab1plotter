@@ -48,24 +48,31 @@ class Plotter(object):
         except:
             return False
 
-    def scatter(self, fig ,x_data, y_data, sigma_x, sigma_y):
-        plt.errorbar(x_data, y_data, sigma_y, sigma_x, fmt='.')
-
-    def setAxisLabel(self, fig, label, axis):
-        if axis == 'x':
-            plt.xlabel(label)
-        if axis == 'y':
-            plt.ylabel(label)
+    def scatter(self):
+        if type(self.sigma_x) != np.ndarray and type(self.sigma_y) != np.ndarray:
+            plt.scatter(self.x_data, self.y_data)
+        else:
+            plt.errorbar(self.x_data, self.y_data, self.sigma_y, self.sigma_x, fmt='.')
 
 
-    def doFit(self, modello, x_data, y_data, sigma_y ):
-        popt, pcov = curve_fit(modello, x_data, y_data, sigma = sigma_y )
+
+    def setAxisLabel(self):
+        if (self.form['x_label'] != '' ):
+            plt.xlabel(self.form['x_label'])
+        if (self.form['y_label'] != '' ):
+            plt.ylabel(self.form['y_label'])
+            
+
+    def doFit(self):
+        modello = self.modelli[self.form['modello']]
+        popt, pcov = curve_fit(modello, self.x_data, self.y_data, sigma = self.sigma_y )
         return popt, np.sqrt( pcov.diagonal())
 
 
-    def drawBestFit(self, modello, popt, x_data, smooth=100):
-        min = x_data.min()
-        max = x_data.max()
+    def drawBestFit(self, popt, smooth=100):
+        modello = self.modelli[self.form['modello']]
+        min = self.x_data.min()
+        max = self.x_data.max()
         x_ = np.linspace(min,max,smooth)
         plt.plot(x_,modello(x_, *popt))
 
@@ -79,49 +86,71 @@ class Plotter(object):
         return output
 
 
-    def compute_chi_squared(self,modello, popt, x_data, y_data, sigma_y):
-        expected = modello(x_data,*popt)
-        return (((expected-y_data)/sigma_y)**2).sum()
+    def compute_chi_squared(self, popt):
+        # questa funzione calcola il chi-quadro del fit
+        # x^2 = \sum{ (modello(x)-y / sigma_y)**2  }
+        # se non si sono usate le incertezze, di default utilizza 1
+        #ritorna il chi-quadro
+        if type(self.sigma_y) != np.ndarray:
+            sigma_y = np.full(self.y_data.shape, 1)
+        else:
+            sigma_y = self.sigma_y
 
-    def handle_graph(self):
-        self.fig = plt.figure()
+        modello = self.modelli[self.form['modello']]
+        expected = modello(self.x_data,*popt)
+        return (((expected-self.y_data)/sigma_y)**2).sum()
 
-        print( self.form )
-
+    def parse_all_data(self):
+        # questa funzione prende i parametri del form e li parsa per creare degli np array
+        # se fallisce qualcosa ritorna una stringa di errore
+        # se la checkbox non è checkata non parsa le incertezze e al posto degli array mette None
+        # inoltre controlla cha la lunghezza degli array sia consistente
+        # se termina senza errori ritorna 'ok'
         self.x_data = self.parse_data( self.form['x_data'] )
         if type(self.x_data) != np.ndarray:
             return "error: C'è un errore nei valori dell'asse x"
         self.y_data = self.parse_data( self.form['y_data'] )
         if type(self.y_data) != np.ndarray:
             return "error: C'è un errore nei valori dell'asse y"
-        self.sigma_x = self.parse_data( self.form['sigma_x'] )
-        if type(self.sigma_x) != np.ndarray:
-            return "error: C'è un errore negli errori dell'asse x"
-        self.sigma_y = self.parse_data( self.form['sigma_y'] )
-        if type(self.sigma_y) != np.ndarray:
-            return "error: C'è un errore negli errori dell'asse y"
+        if 'uncert_checkbox' in self.form:
+            self.sigma_x = self.parse_data( self.form['sigma_x'] )
+            if type(self.sigma_x) != np.ndarray:
+                return "error: C'è un errore negli errori dell'asse x"
+            self.sigma_y = self.parse_data( self.form['sigma_y'] )
+            if type(self.sigma_y) != np.ndarray:
+                return "error: C'è un errore negli errori dell'asse y"
+        else: 
+            self.sigma_x = self.sigma_y = None
+        if type(self.sigma_x) != np.ndarray and type(self.sigma_y) != np.ndarray:
+            if len(self.x_data) != len(self.y_data):
+                return "error: le liste devono essere tutte della stassa lunghezza"
+        else:        
+            result = all(el == len(self.x_data) for el in [len(self.x_data),len(self.y_data),len(self.sigma_x),len(self.sigma_y)] )
+            if result == False:
+                return "error: le liste devono essere tutte della stassa lunghezza"
+        return "ok"
 
+    def handle_graph(self):
+        self.fig = plt.figure()
 
-        result = all(el == len(self.x_data) for el in [len(self.x_data),len(self.y_data),len(self.sigma_x),len(self.sigma_y)] )
-        if result == False:
-            return "error: le liste devono essere tutte della stassa lunghezza"
+        print("-------\n", self.form, "--------\n" )
 
-        if (self.form['x_label'] != '' ):
-            self.setAxisLabel(self.fig,self.form['x_label'],'x')
-        if (self.form['y_label'] != '' ):
-            self.setAxisLabel(self.fig,self.form['y_label'],'y')
+        status = self.parse_all_data()
+        if status != "ok":
+            return status
 
-        self.scatter(self.fig,self.x_data, self.y_data, self.sigma_x, self.sigma_y)
+        self.setAxisLabel()
+        
+        self.scatter()
 
-        popt, sigmas = self.doFit(self.modelli[self.form['modello']] , self.x_data, self.y_data, self.sigma_y)
-        self.drawBestFit(self.modelli[self.form['modello']],popt,  self.x_data)
-
-        x2 = self.compute_chi_squared(self.modelli[self.form['modello']], popt, self.x_data, self.y_data, self.sigma_y)
+        popt, sigmas = self.doFit()
+        self.drawBestFit( popt )
+ 
+        x2 = self.compute_chi_squared( popt )
         output = self.getOutString(popt, sigmas, x2)
 
-        plt.savefig("/home/lucapalumbo/lab1plotter/static/plot.png")#/home/lucapalumbo/lab1plotter/static/plot.png
+        plt.savefig("./static/plot.png") #/home/lucapalumbo/lab1plotter/static/plot.png
 
         return output
 
 
-        return output

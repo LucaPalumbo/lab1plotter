@@ -79,6 +79,44 @@ input[type=submit]:hover {
   color: black;
 }
 
+/* Start by hiding the checkboxes*/
+input[type=checkbox] {
+  visibility: hidden;
+}
+
+input[type="checkbox"]:checked {
+  some code goes here
+}
+
+/* the slider bar */
+.checkbox-example {
+  width: 45px;
+  height: 15px;
+  background: #555;
+  margin: 20px 80px;
+  position: relative;
+  border-radius: 5px;
+}
+
+/* the slider from the label */
+.checkbox-example label {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transition: all .5s ease;
+  cursor: pointer;
+  position: absolute;
+  top: -2px;
+  left: -3px;
+  background: #ccc;
+}
+
+/* Move the slider if the checkbox is clicked */
+.checkbox-example input[type=checkbox]:checked+label {
+  left: 27px;
+}
+
 /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 600px) {
   .col-25, .col-75, input[type=submit] {
@@ -87,8 +125,10 @@ input[type=submit]:hover {
   }
 }
 </style>
+
 </head>
 <body>
+  
 
 <h2>Lab1Plotter</h2>
 <p>Usami per passare lab 1</p>
@@ -131,14 +171,7 @@ input[type=submit]:hover {
       <textarea id="subject" name="x_data" placeholder="[1,2,8]" style="height:100px"></textarea>
     </div>
   </div>
-  <div class="row">
-    <div class="col-25">
-      <label for="subject">sigma x</label>
-    </div>
-    <div class="col-75">
-      <textarea id="subject" name="sigma_x" placeholder="[1,2,8]" style="height:100px"></textarea>
-    </div>
-  </div>
+  
   <div class="row">
     <div class="col-25">
       <label for="subject">y data</label>
@@ -147,14 +180,38 @@ input[type=submit]:hover {
       <textarea id="subject" name="y_data" placeholder="[1,2,8]" style="height:100px"></textarea>
     </div>
   </div>
+
+  
   <div class="row">
     <div class="col-25">
-      <label for="subject">sigma y</label>
-    </div>
-    <div class="col-75">
-      <textarea id="subject" name="sigma_y" placeholder="[1,2,8]" style="height:100px"></textarea>
+      <label for="subject">Incertezze</label>
+      <div class="checkbox-example">
+        <input type="checkbox" value="1" name="uncert_checkbox" checked="True" id="checkboxOneInput" onclick="showUncertaintiesbox()"/>
+        <label for="checkboxOneInput"></label>
+      </div>
     </div>
   </div>
+
+  <div id="incertezze" >
+    <div class="row">
+      <div class="col-25">
+        <label for="subject">sigma x</label>
+      </div>
+      <div class="col-75">
+        <textarea id="subject" name="sigma_x" placeholder="[1,2,8]" style="height:100px"></textarea>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-25">
+        <label for="subject">sigma y</label>
+      </div>
+      <div class="col-75">
+        <textarea id="subject" name="sigma_y" placeholder="[1,2,8]" style="height:100px"></textarea>
+      </div>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-25">
       <label for="country">Modello</label>
@@ -177,6 +234,9 @@ input[type=submit]:hover {
 {% for o in out %}
 <p>{{ o }}</p>
 {% endfor %}
+
+<script src="/static/js/script.js">
+</script>
 
 </body>
 </html>
