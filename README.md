@@ -12,7 +12,7 @@ lab 1 plotter
 - background grid
 - legend
 
-## modelli
+## Models
 - line: y = ax+b
 - quadratic: y = ax^2+bx+c
 - sin function: y = a sin(bx+x)
