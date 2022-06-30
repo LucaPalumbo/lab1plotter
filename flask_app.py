@@ -1,4 +1,3 @@
-from cProfile import label
 from flask import Flask, redirect, render_template, request, url_for, send_file
 from flask.helpers import flash
 import json
@@ -21,7 +20,7 @@ def index():
         output = p.handle_graph()
         if "error" in output:
             flash(output)
-            return redirect(url_for("/"))
+            return redirect(url_for("index"))
         img = p.get_image_name()
         return render_template("index.html", out=output, image = img )
 
