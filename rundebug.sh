@@ -1,4 +1,4 @@
 #!/bin/sh
-export FLASK_APP=main
+export FLASK_APP=flask_app
 export FLASK_ENV=development
 flask run
