@@ -10,7 +10,10 @@ lab 1 plotter
 - Calcola il chi-quadro
 - Plot dei residui
 - Griglia di sfondo
+- Legenda
 
 ## modelli
+- retta: y = ax+b
 - parabola: y = ax^2+bx+c
 - sinusoide: y = a sin(bx+x)
+- esponenziale: y = a e^(bx)

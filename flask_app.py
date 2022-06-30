@@ -32,13 +32,21 @@ def parabola(x,a, b, c):
 def sinusoide(x,a,b,c):
     return a*np.sin(x*b+c)
 
+def retta(x,a,b):
+    return a*x+b
+
+def esponenziale(x,a,b,c):
+    return a* (np.e**(b*x) ) 
+
 class Plotter(object):
     def __init__(self, form):
         super(Plotter, self).__init__()
         self.form = form
         self.modelli = {
             'parabola': parabola,
-            'sinusoide': sinusoide
+            'sinusoide': sinusoide,
+            'retta': retta,
+            'esponenziale': esponenziale
         }
 
     def parse_data(self,data):
