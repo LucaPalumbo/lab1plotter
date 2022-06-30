@@ -11,7 +11,7 @@ function showUncertaintiesbox() {
   }
 
   
-function showUncertaintiesbox() {
+function showLegendbox() {
   var checkBox = document.getElementById("legend_checkbox");
   var text = document.getElementById("legenda");
   if (checkBox.checked == true){
