@@ -1,9 +1,10 @@
-from flask import Flask, redirect, render_template, request, send_file
+from flask import Flask, redirect, render_template, request, url_for, send_file
 from flask.helpers import flash
 import json
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.optimize import curve_fit
+import random
 
 app = Flask(__name__)
 app.secret_key = 'qwerty'
@@ -19,10 +20,9 @@ def index():
         output = p.handle_graph()
         if "error" in output:
             flash(output)
-        return render_template("index.html", out=output )
-
-        #return send_file('plot.png', mimetype='image/png')
-
+            return redirect(url_for("/"))
+        img = p.get_image_name()
+        return render_template("index.html", out=output, image = img )
 
 
 def parabola(x,a, b, c):
@@ -32,7 +32,6 @@ def sinusoide(x,a,b,c):
     return a*np.sin(x*b+c)
 
 class Plotter(object):
-
     def __init__(self, form):
         super(Plotter, self).__init__()
         self.form = form
@@ -42,49 +41,68 @@ class Plotter(object):
         }
 
     def parse_data(self,data):
+        # prende una stringa e prova a valutarla come una lista python
+        # se riesce la converte in array e la ritorna
+        # altrimenti ritorna False
         try:
             array =  np.array( json.loads(data) )
             return array
         except:
             return False
 
-    def scatter(self):
-        if type(self.sigma_x) != np.ndarray and type(self.sigma_y) != np.ndarray:
-            plt.scatter(self.x_data, self.y_data)
+    def scatter(self, x=None, y=None, sigma_y = None, sigma_x = None):
+        # questa funzione disegna i dati inseriti dallo user
+        # se le incertezze sono inserite usa errorbar, altrimenti scatter
+        if type(x) != np.ndarray:
+            x = self.x_data
+        if type(y) != np.ndarray:
+            y = self.y_data
+        if type(sigma_y) != np.ndarray:
+            sigma_y = self.sigma_y
+        if type(sigma_x) != np.ndarray:
+            sigma_x = self.sigma_x
+        if type(sigma_x) != np.ndarray and type(sigma_y) != np.ndarray:
+            plt.scatter(x, y)
         else:
-            plt.errorbar(self.x_data, self.y_data, self.sigma_y, self.sigma_x, fmt='.')
+            plt.errorbar(x, y, sigma_y, sigma_x, fmt='.')
 
-
-
-    def setAxisLabel(self):
-        if (self.form['x_label'] != '' ):
-            plt.xlabel(self.form['x_label'])
-        if (self.form['y_label'] != '' ):
-            plt.ylabel(self.form['y_label'])
+    def setAxisLabel(self, x_axis = None, y_axis = None):
+        # assegna i nomi agli assi se inseriti
+        if x_axis == None:
+            x_axis = self.form['x_label']
+        if y_axis == None:
+            y_axis = self.form['y_label']
+        if (x_axis != '' ):
+            plt.xlabel(x_axis)
+        if (y_axis != '' ):
+            plt.ylabel(y_axis)
             
-
     def doFit(self):
+        # Questa funzione si occupa di effettuare il fit
+        # in questa funzione non faccio controlli su self.sigma_y perche curve_fit
+        # accetta anche None come valore
+        # returna parametri ottimali e incertezze ricavate dalla radice quadrata della diagonale
+        # della matrice di covarianza
         modello = self.modelli[self.form['modello']]
         popt, pcov = curve_fit(modello, self.x_data, self.y_data, sigma = self.sigma_y )
         return popt, np.sqrt( pcov.diagonal())
 
-
-    def drawBestFit(self, popt, smooth=100):
+    def drawBestFit(self, popt, smooth=500):
+        # si occupa di disegnare il grafico di miglior fit
         modello = self.modelli[self.form['modello']]
         min = self.x_data.min()
         max = self.x_data.max()
         x_ = np.linspace(min,max,smooth)
         plt.plot(x_,modello(x_, *popt))
 
-
     def getOutString(self, popt, sigmas,x2):
+        # genera una stringa da mostrare all'utente che contiene informazioni sul fit
         parameters = ['a','b','c']
         output = []
         for p, hat, s in zip(parameters, popt, sigmas):
             output.append( f'{p}= {hat}+/-{s}')
         output.append( f'chi quadro = {x2}')
         return output
-
 
     def compute_chi_squared(self, popt):
         # questa funzione calcola il chi-quadro del fit
@@ -130,8 +148,21 @@ class Plotter(object):
                 return "error: le liste devono essere tutte della stassa lunghezza"
         return "ok"
 
+    def compute_residuals(self,popt):
+        modello = self.modelli[self.form['modello']]
+        res = modello(self.x_data,*popt)- self.y_data
+        return res
+
+    def get_image_name(self):
+        return self.image_name
+
     def handle_graph(self):
+        # gestisce la creazione del grafico
+            
         self.fig = plt.figure()
+        if 'residuals_checkbox' in self.form:
+            self.fig.add_axes((0.1, 0.3, 0.8, 0.6))
+        
 
         print("-------\n", self.form, "--------\n" )
 
@@ -140,16 +171,25 @@ class Plotter(object):
             return status
 
         self.setAxisLabel()
+
         
         self.scatter()
 
         popt, sigmas = self.doFit()
         self.drawBestFit( popt )
  
+        if 'residuals_checkbox' in self.form:
+            self.fig.add_axes((0.1, 0.1, 0.8, 0.2))
+            res = self.compute_residuals(popt)
+            self.setAxisLabel(y_axis='Residui')
+            self.scatter(y = res)
+
         x2 = self.compute_chi_squared( popt )
         output = self.getOutString(popt, sigmas, x2)
 
-        plt.savefig("./static/plot.png") #/home/lucapalumbo/lab1plotter/static/plot.png
+
+        self.image_name = f"plot{str(random.randint(0,100))}.png"
+        plt.savefig("./static/" + self.image_name) #/home/lucapalumbo/lab1plotter/static/plot.png
 
         return output
 
