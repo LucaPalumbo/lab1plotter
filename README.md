@@ -3,10 +3,13 @@ lab 1 plotter
 
 ## Tool di utility per lab 1
 ### feature
-- Scatter con errorbar
+- Scatter di punti
+- Dai nomi agli assi
 - Best fit usando i modelli*
 - Plot del best fit
 - Calcola il chi-quadro
+- Plot dei residui
+- Griglia di sfondo
 
 ## modelli
 - parabola: y = ax^2+bx+c

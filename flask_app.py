@@ -1,3 +1,4 @@
+from cProfile import label
 from flask import Flask, redirect, render_template, request, url_for, send_file
 from flask.helpers import flash
 import json
@@ -50,9 +51,11 @@ class Plotter(object):
         except:
             return False
 
-    def scatter(self, x=None, y=None, sigma_y = None, sigma_x = None):
+    def scatter(self, x=None, y=None, sigma_y = None, sigma_x = None, label=None):
         # questa funzione disegna i dati inseriti dallo user
         # se le incertezze sono inserite usa errorbar, altrimenti scatter
+        if 'legend_checkbox' in self.form and label == None:
+            label = self.form['legend']
         if type(x) != np.ndarray:
             x = self.x_data
         if type(y) != np.ndarray:
@@ -62,9 +65,9 @@ class Plotter(object):
         if type(sigma_x) != np.ndarray:
             sigma_x = self.sigma_x
         if type(sigma_x) != np.ndarray and type(sigma_y) != np.ndarray:
-            plt.scatter(x, y)
+            plt.scatter(x, y, label=label)
         else:
-            plt.errorbar(x, y, sigma_y, sigma_x, fmt='.')
+            plt.errorbar(x, y, sigma_y, sigma_x, fmt='.', label=label)
 
     def setAxisLabel(self, x_axis = None, y_axis = None):
         # assegna i nomi agli assi se inseriti
@@ -87,13 +90,14 @@ class Plotter(object):
         popt, pcov = curve_fit(modello, self.x_data, self.y_data, sigma = self.sigma_y )
         return popt, np.sqrt( pcov.diagonal())
 
-    def drawBestFit(self, popt, smooth=500):
+    def drawBestFit(self, popt, label=None, smooth=500):
         # si occupa di disegnare il grafico di miglior fit
+        label = "Best fit"
         modello = self.modelli[self.form['modello']]
         min = self.x_data.min()
         max = self.x_data.max()
         x_ = np.linspace(min,max,smooth)
-        plt.plot(x_,modello(x_, *popt))
+        plt.plot(x_,modello(x_, *popt),label=label)
 
     def getOutString(self, popt, sigmas,x2):
         # genera una stringa da mostrare all'utente che contiene informazioni sul fit
@@ -153,6 +157,15 @@ class Plotter(object):
         res = modello(self.x_data,*popt)- self.y_data
         return res
 
+    def grid(self):
+        # se specificato aggiunge la griglia di sfondo
+        if 'grid_checkbox' in self.form:
+            plt.grid(axis='both', ls='dashed', color='gray')
+    
+    def legend(self):
+        if 'legend_checkbox' in self.form:
+            plt.legend()
+
     def get_image_name(self):
         return self.image_name
 
@@ -163,7 +176,6 @@ class Plotter(object):
         if 'residuals_checkbox' in self.form:
             self.fig.add_axes((0.1, 0.3, 0.8, 0.6))
         
-
         print("-------\n", self.form, "--------\n" )
 
         status = self.parse_all_data()
@@ -172,21 +184,24 @@ class Plotter(object):
 
         self.setAxisLabel()
 
-        
         self.scatter()
-
+        self.grid()
+        
         popt, sigmas = self.doFit()
-        self.drawBestFit( popt )
- 
+        self.drawBestFit( popt)
+
+        self.legend()
+
         if 'residuals_checkbox' in self.form:
             self.fig.add_axes((0.1, 0.1, 0.8, 0.2))
             res = self.compute_residuals(popt)
             self.setAxisLabel(y_axis='Residui')
             self.scatter(y = res)
+            self.grid()
+
 
         x2 = self.compute_chi_squared( popt )
         output = self.getOutString(popt, sigmas, x2)
-
 
         self.image_name = f"plot{str(random.randint(0,100))}.png"
         plt.savefig("./static/" + self.image_name) #/home/lucapalumbo/lab1plotter/static/plot.png

@@ -159,8 +159,7 @@ input[type=checkbox] {
     </div>
     <div class="col-75">
       <textarea id="subject" name="x_data" placeholder="[0, 29.98,61.46 ,91.96 ,123.48,152.85,183.15,211.1,241.92, 273.24 ,305.74 ,336.16 ,366.58 ,397.53 ,429.2 ]" style="height:100px">
-[0, 29.98,61.46 ,91.96 ,123.48,152.85,183.15,211.1,241.92, 273.24 ,305.74 ,336.16 ,366.58 ,397.53 ,429.2 ]
-      </textarea>
+[0, 29.98,61.46 ,91.96 ,123.48,152.85,183.15,211.1,241.92, 273.24 ,305.74 ,336.16 ,366.58 ,397.53 ,429.2 ]</textarea>
     </div>
   </div>
   
@@ -170,8 +169,7 @@ input[type=checkbox] {
     </div>
     <div class="col-75">
       <textarea id="subject" name="y_data" placeholder="[42.17633333333334, 39.186, 38.23716666666667, 36.562999999999995, 35.181999999999995, 34.076333333333324, 32.92516666666666, 31.199999999999992, 29.58316666666667, 28.447166666666664, 27.135333333333335, 25.734166666666678, 24.246166666666667, 22.839333333333332, 21.38883333333333]" style="height:100px">
-[42.17633333333334, 39.186, 38.23716666666667, 36.562999999999995, 35.181999999999995, 34.076333333333324, 32.92516666666666, 31.199999999999992, 29.58316666666667, 28.447166666666664, 27.135333333333335, 25.734166666666678, 24.246166666666667, 22.839333333333332, 21.38883333333333]
-      </textarea>
+[42.17633333333334, 39.186, 38.23716666666667, 36.562999999999995, 35.181999999999995, 34.076333333333324, 32.92516666666666, 31.199999999999992, 29.58316666666667, 28.447166666666664, 27.135333333333335, 25.734166666666678, 24.246166666666667, 22.839333333333332, 21.38883333333333]</textarea>
     </div>
   </div>
 
@@ -193,8 +191,7 @@ input[type=checkbox] {
       </div>
       <div class="col-75">
         <textarea id="subject" name="sigma_x" placeholder="[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]" style="height:100px">
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        </textarea>
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]</textarea>
       </div>
     </div>
 
@@ -204,11 +201,33 @@ input[type=checkbox] {
       </div>
       <div class="col-75">
         <textarea id="subject" name="sigma_y" placeholder="[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]" style="height:100px">
-[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        </textarea>
+[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]</textarea>
       </div>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-25">
+      <label for="subject">Legenda</label>
+      <div class="checkbox-example">
+        <input type="checkbox" value="1" name="legend_checkbox" id="legend_checkbox" checked="True" onclick="showUncertaintiesbox()"/>
+        <label for="legend_checkbox"></label>
+      </div>
+    </div>
+  </div>
+
+  <div id="legenda" >
+    <div class="row">
+      <div class="col-25">
+        <label for="subject">Legenda</label>
+      </div>
+      <div class="col-75">
+        <textarea id="subject" name="legend" placeholder="Dati raccolti" style="height:100px">Dati raccolti</textarea>
+      </div>
+    </div>
+  </div>
+
+
 
   <div class="row">
     <div class="col-25">
@@ -231,6 +250,17 @@ input[type=checkbox] {
       </select>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-25">
+      <label for="subject">Grid</label>
+      <div class="checkbox-example">
+        <input type="checkbox" value="1" name="grid_checkbox" id="grid_checkbox" checked="True"/>
+        <label for="grid_checkbox"></label>
+      </div>
+    </div>
+  </div>
+
   <br>
   <div class="row">
     <input type="submit" value="Submit">
