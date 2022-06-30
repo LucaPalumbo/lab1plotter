@@ -18,5 +18,4 @@ lab 1 plotter
 - sin function: y = a sin(bx+x)
 - exponential: y = a e^(bx)
 
-## deploy
-[click here](http://lucapalumbo.pythonanywhere.com/)
+## [click here](http://lucapalumbo.pythonanywhere.com/)
