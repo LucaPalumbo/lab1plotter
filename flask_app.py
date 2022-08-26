@@ -29,6 +29,11 @@ def index():
 @app.route('/api/', methods=['GET','POST'])
 def api():
     if request.method == 'POST':
-        return jsonify({'test': 'test1'})
+        data = request.get_data().decode()
+        p = Plotter( data )
+        output = p.handle_graph()
+        img  = p.get_image_name()
+        print(output, img)
+        return jsonify({'img': img, 'output': output})
     if request.method == 'GET':
         return jsonify({'test': 'test2'})
